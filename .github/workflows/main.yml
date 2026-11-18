@@ -24,6 +24,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
       # config auth
+      - name: Print OIDC subject
+        run: |
+          TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r .value)
+          echo "$TOKEN" | cut -d. -f2 | tr '_-' '/+' | base64 -d 2>/dev/null | jq '{sub, aud, iss, repository, ref}'
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
