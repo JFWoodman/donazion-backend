@@ -117,18 +117,19 @@ export class ApiStack extends cdk.Stack {
       ]
     }
 
-      // Add a POST method to the '/todo/create' resource
-    // const example_lambda_fnc = new lambdaNodejs.NodejsFunction(this, 'CreateFunction', {
-    //   runtime: lambda.Runtime.NODEJS_22_X,
-    //   handler: 'create.handler',
-    //   code: lambda.Code.fromAsset(path.join(__dirname, 'create')),
-    //   vpc: vpc,
-    //   environment: db_env,
-    //   securityGroups: [securityGroup],
-    //   timeout: Duration.seconds(3),
-    // })
+    // Add a POST method to the '/api/example' resource
+    const example_lambda_fnc = new lambdaNodejs.NodejsFunction(this, 'ExampleFunction', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'handler',
+      entry: path.join(__dirname, 'example', 'example.mts'),
+      vpc: vpc,
+      environment: db_env,
+      securityGroups: [securityGroup],
+      timeout: Duration.seconds(3),
+    })
 
-    // exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc, integration_parameters), response_parameters)
+
+    exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc, integration_parameters), response_parameters)
 
 
   }
