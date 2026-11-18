@@ -31,4 +31,4 @@ jobs:
           aws-region: "us-east-1"
       # deploy - weeeeeeeeeeeeee
       - name: Deploy to AWS
-        run: cdk deploy --require-approval=never
+        run: npx cdk deploy --require-approval=never
