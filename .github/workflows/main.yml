@@ -1,0 +1,30 @@
+name: AWS Service CI/CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Deploying to CDK"
+      # get repo
+      - uses: actions/checkout@v7
+      # download node lts
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      # get CDK 
+      - name: Install dependencies
+        run: npm ci
+      # config auth
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::157108548075:role/github-cdk-deploy
+          aws-region: "us-east-1"
+      # deploy - weeeeeeeeeeeeee
+      - name: Deploy to AWS
+        run: cdk deploy --require-approval=never
