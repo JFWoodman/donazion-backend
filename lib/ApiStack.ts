@@ -11,7 +11,7 @@ export class ApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
 
-    // Pulls existing SG
+    // Pulls existing VPC
     const vpc = ec2.Vpc.fromVpcAttributes(this, 'VPC', {
         vpcId: 'vpc-0e60f0a4fbd4f0183',                                    
         availabilityZones: ['us-east-1a', 'us-east-1b', 'us-east-1c'],       
@@ -57,65 +57,65 @@ export class ApiStack extends cdk.Stack {
 
     // https://github.com/aws/aws-cdk/blob/main/packages/aws-cdk-lib/aws-apigateway/README.md
     // Defines how the lambda responses are handled by the API gateway
-    const integration_parameters = { 
-       proxy: false,
-       passthroughBehavior: apigw.PassthroughBehavior.WHEN_NO_MATCH,
+    // const integration_parameters = { 
+    //    proxy: false,
+    //    passthroughBehavior: apigw.PassthroughBehavior.WHEN_NO_MATCH,
        
-       integrationResponses: [
-          {
-            // Successful response from the Lambda function, no filter defined
-            statusCode: '200',
-            responseTemplates: {
-              'application/json': '$input.json(\'$\')',       // should just pass JSON through untouched
-            },
-            responseParameters: {
-                'method.response.header.Content-Type':                      "'application/json'",
-                'method.response.header.Access-Control-Allow-Origin':       "'*'",
-                'method.response.header.Access-Control-Allow-Credentials':  "'true'"
-            },
-          },
-          {
-            // For errors, we check if the error message is not empty, get the error data
-            selectionPattern: '(\n|.)+',
-            statusCode: "400",
-            responseTemplates: {
-              'application/json': JSON.stringify({ state: 'error', message: "$util.escapeJavaScript($input.path('$.errorMessage'))" })
-          },
-            responseParameters: {
-                'method.response.header.Content-Type':                      "'application/json'",
-                'method.response.header.Access-Control-Allow-Origin':       "'*'",
-                'method.response.header.Access-Control-Allow-Credentials':  "'true'"
-            },
-          }
-        ]
-      }
+    //    integrationResponses: [
+    //       {
+    //         // Successful response from the Lambda function, no filter defined
+    //         statusCode: '200',
+    //         responseTemplates: {
+    //           'application/json': '$input.json(\'$\')',       // should just pass JSON through untouched
+    //         },
+    //         responseParameters: {
+    //             'method.response.header.Content-Type':                      "'application/json'",
+    //             'method.response.header.Access-Control-Allow-Origin':       "'*'",
+    //             'method.response.header.Access-Control-Allow-Credentials':  "'true'"
+    //         },
+    //       },
+    //       {
+    //         // For errors, we check if the error message is not empty, get the error data
+    //         selectionPattern: '(\n|.)+',
+    //         statusCode: "400",
+    //         responseTemplates: {
+    //           'application/json': JSON.stringify({ state: 'error', message: "$util.escapeJavaScript($input.path('$.errorMessage'))" })
+    //       },
+    //         responseParameters: {
+    //             'method.response.header.Content-Type':                      "'application/json'",
+    //             'method.response.header.Access-Control-Allow-Origin':       "'*'",
+    //             'method.response.header.Access-Control-Allow-Credentials':  "'true'"
+    //         },
+    //       }
+    //     ]
+    //   }
 
-    // defines what responses are from gateway to client
-    const response_parameters = {
-      methodResponses: [
-        {
-          // Successful response from the integration
-          statusCode: '200',
-          // Define what parameters are allowed or not
-          responseParameters: {
-            'method.response.header.Content-Type': true,
-            'method.response.header.Access-Control-Allow-Origin': true,
-            'method.response.header.Access-Control-Allow-Credentials': true
-          },
+    // // defines what responses are from gateway to client
+    // const response_parameters = {
+    //   methodResponses: [
+    //     {
+    //       // Successful response from the integration
+    //       statusCode: '200',
+    //       // Define what parameters are allowed or not
+    //       responseParameters: {
+    //         'method.response.header.Content-Type': true,
+    //         'method.response.header.Access-Control-Allow-Origin': true,
+    //         'method.response.header.Access-Control-Allow-Credentials': true
+    //       },
 
-        },
-        {
-          // Same thing for the error responses
-          statusCode: '400',
-          responseParameters: {
-            'method.response.header.Content-Type': true,
-            'method.response.header.Access-Control-Allow-Origin': true,
-            'method.response.header.Access-Control-Allow-Credentials': true
-          },
+    //     },
+    //     {
+    //       // Same thing for the error responses
+    //       statusCode: '400',
+    //       responseParameters: {
+    //         'method.response.header.Content-Type': true,
+    //         'method.response.header.Access-Control-Allow-Origin': true,
+    //         'method.response.header.Access-Control-Allow-Credentials': true
+    //       },
     
-        }
-      ]
-    }
+    //     }
+    //   ]
+    // }
 
     // Add a POST method to the '/api/example' resource
     const example_lambda_fnc = new lambdaNodejs.NodejsFunction(this, 'ExampleFunction', {
@@ -128,9 +128,8 @@ export class ApiStack extends cdk.Stack {
       timeout: Duration.seconds(3),
     })
 
-
-    exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc, integration_parameters), response_parameters)
-
+    // exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc, integration_parameters), response_parameters)
+    exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc))
 
   }
 }
