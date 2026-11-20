@@ -13,9 +13,10 @@ export class AuthStack extends cdk.Stack {
       signInCaseSensitive: false,
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
       userVerification: {
-        emailStyle: cognito.VerificationEmailStyle.LINK,
-        emailSubject: 'Verify to join Donazion',
-        emailBody: 'Verify your email to complete your sign up. {##Verify Your Email##}',
+        emailSubject: 'Verify your email for our awesome app!',
+        emailBody: 'Thanks for signing up to our awesome app! Your verification code is {####}',
+        emailStyle: cognito.VerificationEmailStyle.CODE,
+        smsMessage: 'Thanks for signing up to our awesome app! Your verification code is {####}',
       },
       signInAliases: {
         username: true,
