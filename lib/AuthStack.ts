@@ -36,8 +36,30 @@ export class AuthStack extends cdk.Stack {
       autoVerify: { email: true },
     })
 
-    const client = userPool.addClient('donazion-web-client')
-    const clientId = client.userPoolClientId
+    const client = userPool.addClient('donazion-web-client', {
+      oAuth: {
+        flows: {
+          // allows the implicit token passing
+          authorizationCodeGrant: true,
+        },
+        scopes: [ cognito.OAuthScope.OPENID ],
+        // allowlist redirect
+        callbackUrls: [ 
+          'http://localhost:3000/OrgDashboard',
+          'http://localhost:3000/DCenterDashboard' 
+         ],
+        logoutUrls: [ 
+          'http://localhost:3000/signin'
+        ],
+      },
+    })
+    // const clientId = client.userPoolClientId
 
+    userPool.addDomain('donazion-managed-login', {
+    cognitoDomain: {
+      domainPrefix: 'donazion',
+    },
+      managedLoginVersion: cognito.ManagedLoginVersion.NEWER_MANAGED_LOGIN,
+    })
   }
 }
