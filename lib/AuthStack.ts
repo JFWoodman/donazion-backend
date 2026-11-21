@@ -9,7 +9,7 @@ export class AuthStack extends cdk.Stack {
     super(scope, id, props)
 
     // Login with Username+password, email as recovery only
-    const userPool = new cognito.UserPool(this, 'myuserpool', {
+    this.userPool = new cognito.UserPool(this, 'myuserpool', {
       userPoolName: 'donazion-userpool',
       selfSignUpEnabled: true,
       signInCaseSensitive: false,
@@ -39,7 +39,7 @@ export class AuthStack extends cdk.Stack {
       autoVerify: { email: true },
     })
 
-    const client = userPool.addClient('donazion-web-client')
+    const client = this.userPool.addClient('donazion-web-client')
     // const clientId = client.userPoolClientId
   }
 }
