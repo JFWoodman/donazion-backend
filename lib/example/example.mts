@@ -9,11 +9,13 @@ interface ResponsePayload {
 }
 
 export const handler = async (event: RequestPayload): Promise<any>  => {
+  console.log("FULL EVENT:", JSON.stringify(event, null, 2));
 
   const response:ResponsePayload = {
     statusCode: 200,
     body: JSON.stringify(event.requestContext.identity),
   }
-  
+
+  console.log("RESPONSE EVENT:", JSON.stringify(response, null, 2));
   return response
 }
