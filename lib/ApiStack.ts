@@ -6,9 +6,14 @@ import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as path from 'node:path'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import { Duration } from 'aws-cdk-lib'
+import * as cognito from "aws-cdk-lib/aws-cognito"
+
+interface AuthStackProps extends cdk.StackProps { 
+  userPool: cognito.UserPool
+} 
 
 export class ApiStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: AuthStackProps) {
     super(scope, id, props)
 
     // Pulls existing VPC
@@ -65,8 +70,15 @@ export class ApiStack extends cdk.Stack {
       securityGroups: [securityGroup],
       timeout: Duration.seconds(3),
     })
-
-    exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc))
-
+    
+    const auth = new apigw.CognitoUserPoolsAuthorizer(this, 'DonazionUserAuthorizer', {
+      cognitoUserPools: [props.userPool]
+    })
+    
+    exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc), {
+      authorizer: auth,
+      authorizationType: apigw.AuthorizationType.COGNITO,
+    })
+    
   }
 }

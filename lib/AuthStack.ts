@@ -3,6 +3,8 @@ import * as cognito from "aws-cdk-lib/aws-cognito"
 import { Construct } from 'constructs';
 
 export class AuthStack extends cdk.Stack {
+  public readonly userPool: cognito.UserPool
+  
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
 
