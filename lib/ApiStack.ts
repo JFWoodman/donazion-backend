@@ -59,6 +59,7 @@ export class ApiStack extends cdk.Stack {
     // Create a resource (e.g., '/calc')
     const mainResource = api_endpoint.root.addResource('api')
     const exampleResource = mainResource.addResource('example')
+    const addCatResource = mainResource.addResource('addCat')
 
     // Add a POST method to the '/api/example' resource
     const example_lambda_fnc = new lambdaNodejs.NodejsFunction(this, 'ExampleFunction', {
@@ -76,6 +77,11 @@ export class ApiStack extends cdk.Stack {
     })
     
     exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc), {
+      authorizer: auth,
+      authorizationType: apigw.AuthorizationType.COGNITO
+    })
+
+    addCatResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc), {
       authorizer: auth,
       authorizationType: apigw.AuthorizationType.COGNITO
     })
