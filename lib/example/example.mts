@@ -8,7 +8,7 @@ interface ResponsePayload {
   body: string,
 }
 
-export const handler = async (event: RequestPayload): Promise<any>  => {
+export const handler = async (event: RequestPayload): Promise<ResponsePayload>  => {
   console.log("FULL EVENT:", JSON.stringify(event, null, 2));
 
   const response:ResponsePayload = {
