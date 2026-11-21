@@ -77,8 +77,8 @@ export class ApiStack extends cdk.Stack {
     
     exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc), {
       authorizer: auth,
-      authorizationType: apigw.AuthorizationType.COGNITO,
+      authorizationType: apigw.AuthorizationType.COGNITO
     })
-    
+
   }
 }
