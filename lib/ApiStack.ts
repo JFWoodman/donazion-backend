@@ -79,6 +79,12 @@ export class ApiStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'handler',
       entry: path.join(__dirname, 'uploadCategoryItem', 'uploadCategoryItem.mjs'),
+      vpc: vpc,
+      environment: db_env,
+      securityGroups: [securityGroup],
+      timeout: Duration.seconds(3)
+    })
+
     const addCat_fcn = new lambdaNodejs.NodejsFunction(this, 'addCategory', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'handler',
@@ -88,9 +94,7 @@ export class ApiStack extends cdk.Stack {
       securityGroups: [securityGroup],
       timeout: Duration.seconds(3),
     })
-
-    exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc))
-    uploadCategoryItemResource.addMethod('POST', new apigw.LambdaIntegration(uploadCategoryItem_lambda_fnc))
+        
     const showdc_dashboard_fcn = new lambdaNodejs.NodejsFunction(this, 'dc_showdashboard', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'handler',
@@ -106,6 +110,7 @@ export class ApiStack extends cdk.Stack {
       cognitoUserPools: [props.userPool]
     })
     
+    uploadCategoryItemResource.addMethod('POST', new apigw.LambdaIntegration(uploadCategoryItem_lambda_fnc))
 
     //Adding method to lambda
     exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc), {
