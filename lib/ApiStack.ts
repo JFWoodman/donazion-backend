@@ -7,6 +7,7 @@ import * as path from 'node:path'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import { Duration } from 'aws-cdk-lib'
 import * as cognito from "aws-cdk-lib/aws-cognito"
+import 'dotenv/config';
 
 interface AuthStackProps extends cdk.StackProps { 
   userPool: cognito.UserPool
@@ -59,7 +60,9 @@ export class ApiStack extends cdk.Stack {
     // Create a resource (e.g., '/calc')
     const mainResource = api_endpoint.root.addResource('api')
     const exampleResource = mainResource.addResource('example')
+    const uploadCategoryItemResource = mainResource.addResource('uploadCategoryItem')
     const addCatResource = mainResource.addResource('addCat')
+    const onboardResource = mainResource.addResource('onboard')
     const dc_showdashboard = mainResource.addResource('dcShowDash')
 
     // Add a POST method to the '/api/example' resource
@@ -73,6 +76,27 @@ export class ApiStack extends cdk.Stack {
       timeout: Duration.seconds(3),
     })
 
+    const onboard_lambda_fnc = new lambdaNodejs.NodejsFunction(this, 'OnboardFnc', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'handler',
+      entry: path.join(__dirname, 'onboard', 'onboard.mts'),
+      vpc: vpc,
+      environment: db_env,
+      securityGroups: [securityGroup],
+      timeout: Duration.seconds(3)
+    })
+    
+    // Add a POST method to the '/api/uploadCategoryItem' resource
+    const uploadCategoryItem_lambda_fnc = new lambdaNodejs.NodejsFunction(this, 'UploadCategoryItemFunction', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'handler',
+      entry: path.join(__dirname, 'uploadCategoryItem', 'uploadCategoryItem.mjs'),
+      vpc: vpc,
+      environment: db_env,
+      securityGroups: [securityGroup],
+      timeout: Duration.seconds(3)
+    })
+
     const addCat_fcn = new lambdaNodejs.NodejsFunction(this, 'addCategory', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'handler',
@@ -82,7 +106,7 @@ export class ApiStack extends cdk.Stack {
       securityGroups: [securityGroup],
       timeout: Duration.seconds(3),
     })
-
+        
     const showdc_dashboard_fcn = new lambdaNodejs.NodejsFunction(this, 'dc_showdashboard', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'handler',
@@ -98,6 +122,7 @@ export class ApiStack extends cdk.Stack {
       cognitoUserPools: [props.userPool]
     })
     
+    uploadCategoryItemResource.addMethod('POST', new apigw.LambdaIntegration(uploadCategoryItem_lambda_fnc))
 
     //Adding method to lambda
     exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc), {
@@ -110,6 +135,11 @@ export class ApiStack extends cdk.Stack {
       authorizationType: apigw.AuthorizationType.COGNITO
     })
 
+    onboardResource.addMethod('POST', new apigw.LambdaIntegration(onboard_lambda_fnc), {
+      authorizer: auth,
+      authorizationType: apigw.AuthorizationType.COGNITO
+    })
+    
     dc_showdashboard.addMethod('POST', new apigw.LambdaIntegration(showdc_dashboard_fcn), {
       authorizer: auth,
       authorizationType: apigw.AuthorizationType.COGNITO

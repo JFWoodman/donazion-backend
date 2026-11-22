@@ -1,0 +1,9 @@
+{
+  "name": "uploadCategoryItem",
+  "version": "1.0.0",
+  "description": "Lambda function to upload category items",
+  "main": "uploadCategoryItem.mjs",
+  "dependencies": {
+    "mysql2": "^3.15.1"
+  }
+}
