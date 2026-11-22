@@ -5,22 +5,29 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "lint": "eslint lib/ bin/"
   },
   "devDependencies": {
+    "@eslint-react/eslint-plugin": "^5.30.6",
+    "@eslint/js": "^10.0.1",
     "@swc/core": "^1.15.0",
     "@swc/jest": "^0.2.39",
     "@types/jest": "^30",
     "@types/node": "^24.10.1",
     "aws-cdk": "2.1147.0",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
     "jest": "^30",
     "tsx": "^4.23.0",
-    "typescript": "~5.9"
+    "typescript": "~5.9",
+    "typescript-eslint": "^8.73.0"
   },
   "dependencies": {
     "aws-cdk-lib": "^2.277.0",
     "constructs": "^10.8.1",
     "dotenv": "^18.0.10",
+    "jiti": "^2.7.0",
     "mysql2": "^3.24.6"
   }
 }
