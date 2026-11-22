@@ -2,6 +2,13 @@ import 'dotenv/config';
 import mysql from 'mysql2'
 import { resourceLimits } from 'worker_threads';
 
+var pool = mysql.createPool({
+      host: 	process.env.RDS_HOST,
+      user: 	process.env.RDS_USER,
+      password: process.env.RDS_PASSWORD,
+      database: process.env.RDS_DATABASE
+  })
+
 interface DatabaseDonationCenter {
     dc_name: string,
     dc_latitude: number,
@@ -27,18 +34,15 @@ interface categoryNameItemVal {
     cat_itemValue: number
 }
 
-export const handler = async (userId: string): Promise<DatabaseDonationCenter | any | undefined>  => {
+export const handler = async (event: any): Promise<DatabaseDonationCenter | any | undefined>  => {
   let code
   let result 
 
-  var pool = mysql.createPool({
-      host: 	process.env.RDS_HOST,
-      user: 	process.env.RDS_USER,
-      password: process.env.RDS_PASSWORD,
-      database: process.env.RDS_DATABASE
-  })
+  
 
   try {
+    const userId: string = JSON.parse(event.body).userId
+
     const getDonationCenterLocInfo = () => {
       return new Promise((resolve, reject) => {
         const selectQuery = "SELECT * FROM DonationCenter WHERE dc_id = ?"
@@ -65,11 +69,12 @@ export const handler = async (userId: string): Promise<DatabaseDonationCenter | 
 
     const getGrandNumItems = () => {
       return new Promise((resolve, reject) => {
-        const selectQuery = "SELECT SUM(ItemInstance.inst_qty) FROM DonationCenter LEFT JOIN ItemInstance.dc_id on DonationCenter.dc_id = ItemInstance.dc_id WHERE DonationCenter.dc_id = ?"
+        const selectQuery = "SELECT SUM(ItemInstance.inst_qty) as dc_grandNumber FROM DonationCenter LEFT JOIN ItemInstance ON DonationCenter.dc_id = ItemInstance.dc_id WHERE DonationCenter.dc_id = ?"
         pool.query(selectQuery, [userId], (error, results) => {
           if(error){ return reject(error)}
           if(Array.isArray(results) && results.length == 1){ 
             const dcNumItems: grandNumber = results[0] as grandNumber
+            return resolve(dcNumItems.dc_grandNumber)
           } else {
             return resolve(undefined)
           }
@@ -79,11 +84,12 @@ export const handler = async (userId: string): Promise<DatabaseDonationCenter | 
 
     const getGrandNumValues = () => {
       return new Promise((resolve, reject) => {
-        const selectQuery = "SELECT SUM(ItemInstance.inst_value) FROM DonationCenter LEFT JOIN ItemInstance.dc_id ON DonationCenter.dc_id = ItemInstance.dc_id WHERE DonationCenter.dc_id = ?"
+        const selectQuery = "SELECT SUM(ItemInstance.inst_value) as dc_grandValue FROM DonationCenter LEFT JOIN ItemInstance ON DonationCenter.dc_id = ItemInstance.dc_id WHERE DonationCenter.dc_id = ?"
         pool.query(selectQuery, [userId], (error, results) => {
           if(error){ return reject(error)}
           if(Array.isArray(results) && results.length == 1){ 
-            const dcNumItems: grandValue = results[0] as grandValue
+            const dcValue: grandValue = results[0] as grandValue
+            return resolve(dcValue.dc_grandValue)
           } else {
             return resolve(undefined)
           }
@@ -93,12 +99,15 @@ export const handler = async (userId: string): Promise<DatabaseDonationCenter | 
 
     const getCategoriesItemsValue = () => {
       return new Promise((resolve, reject) => {
-        const selectQuery = "SELECT Category.cat_name, SUM(ItemInstance.inst_value), SUM(ItemInstance.inst_qty) FROM DonationCenter JOIN DonationCenter, ItemInstance, Item, Category ON DonationCenter.dc_id = ItemInstance.dc_id, ItemInstance.item_id = Item.item_id, Item.cat_id = Category.cat_id WHERE DonationCenter.dc_id = ?"
+        const selectQuery = "SELECT Category.cat_name, SUM(ItemInstance.inst_value) AS cat_itemValue, SUM(ItemInstance.inst_qty) AS cat_itemCount FROM DonationCenter JOIN ItemInstance ON DonationCenter.dc_id = ItemInstance.dc_id JOIN Item ON ItemInstance.item_id = Item.item_id JOIN Category ON Item.cat_id = Category.cat_id WHERE DonationCenter.dc_id = ? GROUP BY Category.cat_id, Category.cat_name"
+        //the SQL query is both beautiful, and horrifying, to be hold
         pool.query(selectQuery, [userId], (error,results) => {
           if(error){ return reject(error)}
           if(Array.isArray(results) && results.length >= 1){
             //const catItemVals: categoryNameItemVal = results as categoryNameItemVal
             return resolve(results || [])
+          } else {
+            return resolve([])
           }
         })
       })
