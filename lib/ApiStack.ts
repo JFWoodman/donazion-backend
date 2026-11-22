@@ -7,9 +7,7 @@ import * as path from 'node:path'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import { Duration } from 'aws-cdk-lib'
 import * as cognito from "aws-cdk-lib/aws-cognito"
-import * as dotenv from "dotenv"
-
-dotenv.config
+import 'dotenv/config';
 
 export class ApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
