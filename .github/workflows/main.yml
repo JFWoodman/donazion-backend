@@ -11,6 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: db
     steps:
       - run: echo "Deploying to CDK"
       # get repo
