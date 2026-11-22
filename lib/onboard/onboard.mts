@@ -36,7 +36,7 @@ const isOnboarded = async (id: string): Promise<boolean> => {
   })
 }
 
-const handler = async (event: RequestPayload): Promise<ResponsePayload> => {
+export const handler = async (event: RequestPayload): Promise<ResponsePayload> => {
   // check if user is a org, if so deny else create db entry
   const reqId: string = event.requestContext.authorizer.claims.sub
   const orgStatus: boolean = await isOrg(reqId)
