@@ -60,12 +60,23 @@ export class ApiStack extends cdk.Stack {
     const mainResource = api_endpoint.root.addResource('api')
     const exampleResource = mainResource.addResource('example')
     const addCatResource = mainResource.addResource('addCat')
-
+    const onboardResource = mainResource.addResource('onboard')
+  
     // Add a POST method to the '/api/example' resource
     const example_lambda_fnc = new lambdaNodejs.NodejsFunction(this, 'ExampleFunction', {
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'handler',
       entry: path.join(__dirname, 'example', 'example.mts'),
+      vpc: vpc,
+      environment: db_env,
+      securityGroups: [securityGroup],
+      timeout: Duration.seconds(3),
+    })
+
+    const onboard_lambda_fnc = new lambdaNodejs.NodejsFunction(this, 'OnboardFnc', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'handler',
+      entry: path.join(__dirname, 'onboard', 'onboard.mts'),
       vpc: vpc,
       environment: db_env,
       securityGroups: [securityGroup],
@@ -86,5 +97,9 @@ export class ApiStack extends cdk.Stack {
       authorizationType: apigw.AuthorizationType.COGNITO
     })
 
+    onboardResource.addMethod('POST', new apigw.LambdaIntegration(onboard_lambda_fnc), {
+      authorizer: auth,
+      authorizationType: apigw.AuthorizationType.COGNITO
+    })
   }
 }
