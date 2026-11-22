@@ -59,9 +59,11 @@ export class ApiStack extends cdk.Stack {
     // Create a resource (e.g., '/calc')
     const mainResource = api_endpoint.root.addResource('api')
     const exampleResource = mainResource.addResource('example')
+    const uploadCategoryItemResource = mainResource.addResource('uploadCategoryItem')
     const addCatResource = mainResource.addResource('addCat')
     const onboardResource = mainResource.addResource('onboard')
-  
+    const dc_showdashboard = mainResource.addResource('dcShowDash')
+
     // Add a POST method to the '/api/example' resource
     const example_lambda_fnc = new lambdaNodejs.NodejsFunction(this, 'ExampleFunction', {
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -80,24 +82,64 @@ export class ApiStack extends cdk.Stack {
       vpc: vpc,
       environment: db_env,
       securityGroups: [securityGroup],
-      timeout: Duration.seconds(3),
+      timeout: Duration.seconds(3)
     })
     
+    // Add a POST method to the '/api/uploadCategoryItem' resource
+    const uploadCategoryItem_lambda_fnc = new lambdaNodejs.NodejsFunction(this, 'UploadCategoryItemFunction', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'handler',
+      entry: path.join(__dirname, 'uploadCategoryItem', 'uploadCategoryItem.mjs'),
+      vpc: vpc,
+      environment: db_env,
+      securityGroups: [securityGroup],
+      timeout: Duration.seconds(3)
+    })
+
+    const addCat_fcn = new lambdaNodejs.NodejsFunction(this, 'addCategory', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'handler',
+      entry: path.join(__dirname, 'addCategory', 'addCatLambda.mjs'),
+      vpc: vpc,
+      environment: db_env,
+      securityGroups: [securityGroup],
+      timeout: Duration.seconds(3),
+    })
+        
+    const showdc_dashboard_fcn = new lambdaNodejs.NodejsFunction(this, 'dc_showdashboard', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'handler',
+      entry: path.join(__dirname, 'dc_showdashboard', 'dc_showdashboard.mts'),
+      vpc: vpc,
+      environment: db_env,
+      securityGroups: [securityGroup],
+      timeout: Duration.seconds(3)
+    })
+    
+    //Authentication user protocals
     const auth = new apigw.CognitoUserPoolsAuthorizer(this, 'DonazionUserAuthorizer', {
       cognitoUserPools: [props.userPool]
     })
     
+    uploadCategoryItemResource.addMethod('POST', new apigw.LambdaIntegration(uploadCategoryItem_lambda_fnc))
+
+    //Adding method to lambda
     exampleResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc), {
       authorizer: auth,
       authorizationType: apigw.AuthorizationType.COGNITO
     })
 
-    addCatResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc), {
+    addCatResource.addMethod('POST', new apigw.LambdaIntegration(addCat_fcn), {
       authorizer: auth,
       authorizationType: apigw.AuthorizationType.COGNITO
     })
 
     onboardResource.addMethod('POST', new apigw.LambdaIntegration(onboard_lambda_fnc), {
+      authorizer: auth,
+      authorizationType: apigw.AuthorizationType.COGNITO
+    })
+    
+    dc_showdashboard.addMethod('POST', new apigw.LambdaIntegration(showdc_dashboard_fcn), {
       authorizer: auth,
       authorizationType: apigw.AuthorizationType.COGNITO
     })
