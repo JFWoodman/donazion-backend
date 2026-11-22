@@ -8,6 +8,7 @@ export const getDonationCenter = async (userId: string): Promise<UserDonationCen
             if (Array.isArray(results) && results.length == 1) {
                 const dc: DatabaseDonationCenter = results[0] as DatabaseDonationCenter
                 return resolve({
+                    name: dc.dc_name,
                     address: dc.dc_address,
                     city: dc.dc_city,
                     state: dc.dc_state,
