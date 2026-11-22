@@ -9,12 +9,8 @@ import { Duration } from 'aws-cdk-lib'
 import * as cognito from "aws-cdk-lib/aws-cognito"
 import 'dotenv/config';
 
-interface AuthStackProps extends cdk.StackProps { 
-  userPool: cognito.UserPool
-} 
-
 export class ApiStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props: AuthStackProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
 
     // Pulls existing VPC
@@ -28,6 +24,8 @@ export class ApiStack extends cdk.Stack {
     const securityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, 'SG', 'sg-04a27b0bfdcd4b9f6', {
         mutable: false
     })
+
+    const sharedUserPool = cognito.UserPool.fromUserPoolId(this, "shared-user-pool", "us-east-1_IZhc9ldTl")
 
     const db_env = {
       "RDS_USER": process.env.SQL_USER!,
@@ -47,9 +45,12 @@ export class ApiStack extends cdk.Stack {
       timeout: Duration.seconds(3),
     })
 
+    
+    const stageName = cdk.Stage.of(this)?.stageName
+    const apiPrefix = stageName === "Prod" ? "" : `${stageName}-`
     const api_endpoint = new apigw.LambdaRestApi(this, `donazionAPI`, {
       handler: default_fn,
-      restApiName: `donazionAPI`, 
+      restApiName: `${apiPrefix}donazionAPI`, 
       proxy: false,
       defaultCorsPreflightOptions: {
         allowOrigins: apigw.Cors.ALL_ORIGINS,
@@ -119,7 +120,7 @@ export class ApiStack extends cdk.Stack {
     
     //Authentication user protocals
     const auth = new apigw.CognitoUserPoolsAuthorizer(this, 'DonazionUserAuthorizer', {
-      cognitoUserPools: [props.userPool]
+      cognitoUserPools: [sharedUserPool]
     })
     
     uploadCategoryItemResource.addMethod('POST', new apigw.LambdaIntegration(uploadCategoryItem_lambda_fnc))
