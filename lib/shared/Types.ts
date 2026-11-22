@@ -1,4 +1,5 @@
 export interface UserDonationCenter {
+    name: string,
     address: string,
     city: string,
     zipcode: string
