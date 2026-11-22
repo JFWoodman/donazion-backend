@@ -71,6 +71,16 @@ export class ApiStack extends cdk.Stack {
       securityGroups: [securityGroup],
       timeout: Duration.seconds(3),
     })
+
+    const addCat_fcn = new lambdaNodejs.NodejsFunction(this, 'addCategory'), {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'handler',
+      entry: path.join(__dirname, 'addCategory', 'addCatLambda.mjs'),
+      vpc: vpc,
+      environment: db_env,
+      securityGroups: [securityGroup],
+      timeout: Duration.seconds(3),
+    }
     
     const auth = new apigw.CognitoUserPoolsAuthorizer(this, 'DonazionUserAuthorizer', {
       cognitoUserPools: [props.userPool]
@@ -81,10 +91,9 @@ export class ApiStack extends cdk.Stack {
       authorizationType: apigw.AuthorizationType.COGNITO
     })
 
-    addCatResource.addMethod('POST', new apigw.LambdaIntegration(example_lambda_fnc), {
+    addCatResource.addMethod('POST', new apigw.LambdaIntegration(addCat_fcn), {
       authorizer: auth,
       authorizationType: apigw.AuthorizationType.COGNITO
     })
-
   }
 }
