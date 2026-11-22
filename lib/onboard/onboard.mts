@@ -59,28 +59,34 @@ export const handler = async (event: RequestPayload): Promise<ResponsePayload> =
   const reqId: string = event.requestContext.authorizer.claims.sub
   const orgStatus: boolean = await isOrg(reqId)
   const onboardStatus: boolean = await isOnboarded(reqId)
-  const parsed = JSON.parse(event.body)
+  let body: UserDonationCenter
+
+  try {
+    body = JSON.parse(event.body)
+  } catch (error) {
+    return {statusCode: 500, body: JSON.stringify({"message":"Invalid Body"})} 
+  }
+  
+  if (!validateJSON(body)) {
+    return {statusCode: 400, body: JSON.stringify({"message":"Body missing fields"})}
+  }
 
   if (orgStatus || onboardStatus) {
     return {statusCode: 400, body: JSON.stringify({"message":"User not eligible"})}
   }
 
-  if (!validateJSON(parsed)) {
-    return {statusCode: 400, body: JSON.stringify({"message":"Invalid body"})}
-  }
-
-  console.log(JSON.stringify(event), null, 2)
+  // console.log(JSON.stringify(event), null, 2)
 
   try {
     await new Promise<void>((resolve, reject) => {
       pool.query(`INSERT INTO DonationCenter 
         (dc_id, orgo_id, dc_name, dc_address, dc_city, dc_state, dc_zipcode, dc_latitude, dc_longitude)
         VALUES (?,?,?,?,?,?,?,?,?)`,
-        [reqId, "0", parsed.name, parsed.address, parsed.city, parsed.state, parsed.zipcode, parsed.lat, parsed.long],
+        [reqId, "0", body.name, body.address, body.city, body.state, body.zipcode, body.lat, body.long],
       (err) => (err ? reject(err) : resolve()))
     })
   } catch (error) {
-    console.log(error)
+    // console.log(error)
     return {statusCode: 500, body: JSON.stringify({"message":"Database error"})}
   }
   return {statusCode: 200, body: JSON.stringify({"message":"Donation Center added successfully"})}
