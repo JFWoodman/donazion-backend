@@ -1,7 +1,7 @@
-import { pool } from "./DbPool"
 import { UserDonationCenter, DatabaseDonationCenter} from "./Types"
+import { Pool } from 'mysql2'
 
-export const getDonationCenter = async (userId: string): Promise<UserDonationCenter | undefined> => {
+export const getDonationCenter = async (userId: string, pool: Pool): Promise<UserDonationCenter | undefined> => {
     return new Promise((resolve, reject) => {
         pool.query("SELECT * FROM DonationCenter WHERE dc_id = ? ", [userId], (error, results) => {
             if (error) { return reject(error) }

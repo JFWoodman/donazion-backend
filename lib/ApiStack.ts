@@ -7,6 +7,7 @@ import * as path from 'node:path'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import { Duration } from 'aws-cdk-lib'
 import * as cognito from "aws-cdk-lib/aws-cognito"
+import 'dotenv/config';
 
 interface AuthStackProps extends cdk.StackProps { 
   userPool: cognito.UserPool
