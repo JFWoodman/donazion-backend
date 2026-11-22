@@ -15,14 +15,6 @@ jobs:
       - run: echo "Deploying to CDK"
       # get repo
       - uses: actions/checkout@v7
-      - name: Create .env file
-        run: |
-          cat << 'EOF' > .env
-          SQL_USER=${{ secrets.SQL_USER }}
-          SQL_PASSWORD=${{ secrets.SQL_PASSWORD }}
-          SQL_ENDPOINT=${{ secrets.SQL_ENDPOINT }}
-          SQL_DB=${{ secrets.SQL_DB }}
-          EOF
       - name: Set up Node
         uses: actions/setup-node@v7
         with:
@@ -36,4 +28,9 @@ jobs:
           aws-region: "us-east-1"
       # deploy *all* the stacks
       - name: Deploy to AWS
+        env: 
+          SQL_USER: ${{ secrets.SQL_USER }}
+          SQL_PASSWORD: ${{ secrets.SQL_PASSWORD }}
+          SQL_ENDPOINT: ${{ secrets.SQL_ENDPOINT }}
+          SQL_DB: ${{ secrets.SQL_DB }}
         run: npx cdk deploy --all --require-approval=never
