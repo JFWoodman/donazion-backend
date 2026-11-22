@@ -28,7 +28,7 @@ const isOnboarded = async (id: string): Promise<boolean> => {
   return new Promise((resolve, reject) => {
     pool.query("SELECT * FROM calc.DonationCenter WHERE dc_id = ?", [id], (err, rows) => {
       if (err) { reject(err) }
-      if (rows) {
+      if (Array.isArray(rows) && rows.length > 0 ) {
         resolve(true)
       } else {
         resolve(false)
