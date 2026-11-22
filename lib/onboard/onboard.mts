@@ -40,15 +40,18 @@ const isOnboarded = async (id: string): Promise<boolean> => {
   })
 }
 
-const validateJSON = (obj: any): boolean => {
+const validateJSON = (obj: unknown): obj is UserDonationCenter => {
+  if (typeof obj !== "object" || obj === null) return false;
+  const data = obj as Record<string, unknown>;
+
   return (
-    typeof obj.name === "string" &&
-    typeof obj.address === "string" &&
-    typeof obj.city === "string" &&
-    typeof obj.state === "string" &&
-    typeof obj.zipcode === "string" &&
-    typeof obj.lat === "number" &&
-    typeof obj.long === "number"
+    typeof data.name === "string" &&
+    typeof data.address === "string" &&
+    typeof data.city === "string" &&
+    typeof data.state === "string" &&
+    typeof data.zipcode === "string" &&
+    typeof data.lat === "number" &&
+    typeof data.long === "number"
   )
 }
 
@@ -73,9 +76,10 @@ export const handler = async (
     if (event.body) {
       body = JSON.parse(event.body)
     } else {
-      throw new Error("Error ")
+      throw new Error("Error parsing body")
     }
   } catch (error) {
+    console.log(JSON.stringify(error, null, 2))
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Invalid Body" }),
@@ -96,7 +100,7 @@ export const handler = async (
     }
   }
 
-  // console.log(JSON.stringify(event), null, 2)
+  // console.log(JSON.stringify(event, null, 2))
 
   try {
     await new Promise<void>((resolve, reject) => {
@@ -119,7 +123,7 @@ export const handler = async (
       )
     })
   } catch (error) {
-    // console.log(error)
+    console.log(JSON.stringify(error, null, 2))
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Database error" }),

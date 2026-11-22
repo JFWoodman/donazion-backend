@@ -1,15 +1,45 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib/core';
-import { ApiStack } from '../lib/ApiStack';
+import { AppStage } from '../lib/AppStage';
 import { AuthStack } from '../lib/AuthStack';
 
-// import { DbStack } from '../lib/DbStack';
-// import { VpcStack } from '../lib/VpcStack';
-
-
 const app = new cdk.App();
+const env = {account: '157108548075', region: 'us-east-1'}
 
-// const vpc = new VpcStack(app, 'vpcStack', {});
-// const db = new DbStack(app, 'dbStack', {"vpc": vpc});
-const auth_stack = new AuthStack(app, 'AuthStack', { env: {account: '157108548075', region: 'us-east-1'}});
-const api_stack = new ApiStack(app, 'apiStack', { userPool: auth_stack.userPool, env: {account: '157108548075', region: 'us-east-1'} });
+new AuthStack(app, 'AuthStack', { env });
+
+new AppStage(app, 'Prod', {
+  env: {
+    account: '157108548075',
+    region: 'us-east-1'
+  },
+  legacyStackNames: { auth: "AuthStack", api: "apiStack" }
+})
+
+new AppStage(app, 'Dev-Adam', {
+  env: {
+    account: '157108548075',
+    region: 'us-east-1'
+  }
+})
+
+new AppStage(app, 'Dev-Dennis', {
+  env: {
+    account: '157108548075',
+    region: 'us-east-1'
+  }
+})
+
+new AppStage(app, 'Dev-Jared', {
+  env: {
+    account: '157108548075',
+    region: 'us-east-1'
+  }
+})
+
+new AppStage(app, 'Dev-Tucker', {
+  env: {
+    account: '157108548075',
+    region: 'us-east-1'
+  }
+})
